@@ -14,12 +14,34 @@ datasource db {
 }
 
 model Customer {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  name      String
-  phone     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  customerType   CustomerType
+  firstName      String
+  lastName       String
+  phone          String       @unique
+  gender         Gender
+  maxCreditLimit Float
+  maxCreditDays  Int
+  taxPin         String?
+  dob            DateTime?
+  email          String?      @unique
+  nationalID     String?      @unique
+  country        String
+  location       String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum CustomerType {
+  RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+  OTHER
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 model User {
@@ -39,11 +61,6 @@ model User {
   shops     Shop[]
 }
 
-enum Gender {
-  MALE
-  FEMALE
-}
-
 enum Role {
   ADMIN
   ATTENDANT
@@ -58,5 +75,5 @@ model Shop {
   updatedAt    DateTime @updatedAt
   adminId      String   @db.ObjectId
   admin        User     @relation(fields: [adminId], references: [id])
-  attendantIds String   @db.ObjectId
+  attendantIds String[] @db.ObjectId
 }
