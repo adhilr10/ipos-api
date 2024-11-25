@@ -20,14 +20,14 @@ model Customer {
   lastName       String
   phone          String       @unique
   gender         Gender
+  country        String
+  location       String
   maxCreditLimit Float
   maxCreditDays  Int
   taxPin         String?
   dob            DateTime?
   email          String?      @unique
-  nationalID     String?      @unique
-  country        String
-  location       String
+  NIN            String?      @unique
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -76,4 +76,34 @@ model Shop {
   adminId      String   @db.ObjectId
   admin        User     @relation(fields: [adminId], references: [id])
   attendantIds String[] @db.ObjectId
+}
+
+model Supplier {
+  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+  supplierType        SupplierType
+  name                String
+  contactPerson       String
+  phone               String        @unique
+  email               String?       @unique
+  location            String
+  country             String
+  website             String?
+  taxPin              String?
+  registrationNumber  String?       @unique
+  bankAccountNumber   String?
+  bankName            String?
+  paymentTerms        String?
+  logo                String?       @default("https://cdn-icons-png.flaticon.com/128/10446/10446694.png")
+  rating              Float?
+  notes               String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+enum SupplierType {
+  MANUFACTURER
+  DISTRIBUTOR
+  WHOLESALER
+  RETAILER
+  OTHER
 }

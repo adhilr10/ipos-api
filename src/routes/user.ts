@@ -7,14 +7,14 @@ import {
   updateUserById,
   updateUserPasswordById,
 } from "@/controllers/user";
-import express from "express";
+import express, { RequestHandler } from "express";
 
 const userRouter = express.Router();
 
-userRouter.post("/users", createUser);
-userRouter.get("/users", getUser);
-userRouter.get("/attendants", getAttendants);
-userRouter.get("/users/:id", getUserById);
+userRouter.post("/users", createUser as RequestHandler);
+userRouter.get("/users", getUser as RequestHandler);
+userRouter.get("/attendants", getAttendants as RequestHandler);
+userRouter.get("/users/:id", getUserById as RequestHandler);
 userRouter.put("/users/:id", updateUserById);
 userRouter.put("/users/update-password/:id", updateUserPasswordById);
 userRouter.delete("/users/:id", deleteUserById);
