@@ -40,13 +40,13 @@ export const getUnits: RequestHandler = async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       data: units,
       error: null,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       data: null,
       error: "Something went wrong",
     });
@@ -61,55 +61,22 @@ export const getSingleUnit: RequestHandler = async (req, res) => {
     });
 
     if (!existingUnit) {
-      return res.status(404).json({
+      res.status(404).json({
         data: null,
         error: "Unit does not exist",
       });
       return;
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       data: existingUnit,
       error: null,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       data: null,
       error: "Something went wrong",
-    });
-  }
-};
-
-export const deleteUnitById: RequestHandler = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const unit = await db.unit.findUnique({
-      where: {
-        id,
-      },
-    });
-    if (!unit) {
-      return res.status(404).json({
-        data: null,
-        error: "Unit not found",
-      });
-    }
-
-    await db.unit.delete({
-      where: {
-        id,
-      },
-    });
-    return res.status(200).json({
-      success: true,
-      error: null,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      error: "Something went wrong",
-      data: null,
     });
   }
 };
@@ -127,10 +94,11 @@ export const updateUnitById: RequestHandler = async (req, res) => {
     });
 
     if (!existingUnit) {
-      return res.status(404).json({
+      res.status(404).json({
         data: null,
         error: "Unit not found",
       });
+      return;
     }
     if (slug && slug !== existingUnit.slug) {
       const existingUnitBySlug = await db.unit.findUnique({
@@ -138,10 +106,11 @@ export const updateUnitById: RequestHandler = async (req, res) => {
       });
 
       if (existingUnitBySlug) {
-        return res.status(409).json({
+        res.status(409).json({
           data: null,
           error: "Unit already exists",
         });
+        return;
       }
     }
     //Update unit
@@ -156,13 +125,47 @@ export const updateUnitById: RequestHandler = async (req, res) => {
       },
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       data: updatedUnit,
       error: null,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
+      error: "Something went wrong",
+      data: null,
+    });
+  }
+};
+
+export const deleteUnitById: RequestHandler = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const unit = await db.unit.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!unit) {
+      res.status(404).json({
+        data: null,
+        error: "Unit not found",
+      });
+      return;
+    }
+
+    await db.unit.delete({
+      where: {
+        id,
+      },
+    });
+    res.status(200).json({
+      success: true,
+      error: null,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });

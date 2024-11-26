@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, RequestHandler, Response } from "express";
 import { db } from "@/db/db";
 import bcrypt from "bcrypt";
 
@@ -150,7 +150,7 @@ export async function updateUserById(req: Request, res: Response) {
       username,
       firstName,
       lastName,
-      password, 
+      password,
       phone,
       dob,
       gender,
@@ -165,10 +165,11 @@ export async function updateUserById(req: Request, res: Response) {
     });
 
     if (!existingUser) {
-      return res.status(404).json({
+      res.status(404).json({
         data: null,
         error: "User not found",
       });
+      return;
     }
 
     // If email, username, phone are unique
@@ -179,10 +180,11 @@ export async function updateUserById(req: Request, res: Response) {
         },
       });
       if (existingUserByEmail) {
-        return res.status(401).json({
+        res.status(401).json({
           error: `Email (${email}) is already taken`,
           data: null,
         });
+        return;
       }
     }
 
@@ -193,10 +195,11 @@ export async function updateUserById(req: Request, res: Response) {
         },
       });
       if (existingUserByPhone) {
-        return res.status(401).json({
+        res.status(401).json({
           error: `Phone Number (${phone}) is already taken`,
           data: null,
         });
+        return;
       }
     }
 
@@ -207,10 +210,11 @@ export async function updateUserById(req: Request, res: Response) {
         },
       });
       if (existingUserByUsername) {
-        return res.status(401).json({
+        res.status(401).json({
           error: `Username (${username}) is already taken`,
           data: null,
         });
+        return;
       }
     }
 
@@ -234,19 +238,19 @@ export async function updateUserById(req: Request, res: Response) {
         dob,
         gender,
         image,
-        password: hashedPassword
+        password: hashedPassword,
       },
     });
 
     //return update user without password
-    const { password:userPass, ...others } = updateUser;
-    return res.status(200).json({
+    const { password: userPass, ...others } = updateUser;
+    res.status(200).json({
       data: others,
       error: null,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });
@@ -264,7 +268,7 @@ export async function updateUserPasswordById(req: Request, res: Response) {
       },
     });
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         data: null,
         error: "User not found",
       });
@@ -280,13 +284,13 @@ export async function updateUserPasswordById(req: Request, res: Response) {
       },
     });
     const { password: savedPassword, ...others } = updateUser;
-    return res.status(200).json({
+    res.status(200).json({
       data: others,
       error: null,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });
@@ -302,10 +306,11 @@ export async function deleteUserById(req: Request, res: Response) {
       },
     });
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         data: null,
         error: "User not found",
       });
+      return;
     }
     const updateUser = await db.user.findUnique({
       where: {
@@ -317,18 +322,53 @@ export async function deleteUserById(req: Request, res: Response) {
         id,
       },
     });
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       error: null,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });
   }
 }
+
+// export const deleteUserById: RequestHandler = async (req, res) => {
+//   const { id } = req.params;
+//   try {
+//     const user = await db.user.findUnique({
+//       where: {
+//         id,
+//       },
+//     });
+//     if (!user) {
+//       res.status(404).json({
+//         data: null,
+//         error: "User not found",
+//       });
+//       return;
+//     }
+
+//     await db.user.delete({
+//       where: {
+//         id,
+//       },
+//     });
+//     res.status(200).json({
+//       success: true,
+//       error: null,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({
+//       error: "Something went wrong",
+//       data: null,
+//     });
+//   }
+// };
+
 
 export async function getAttendants(req: Request, res: Response) {
   try {

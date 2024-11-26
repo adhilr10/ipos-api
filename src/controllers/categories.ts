@@ -81,39 +81,7 @@ export const getSingleCategory: RequestHandler = async (req, res) => {
   }
 };
 
-export const deleteCategoryById: RequestHandler = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const category = await db.category.findUnique({
-      where: {
-        id,
-      },
-    });
-    if (!category) {
-      res.status(404).json({
-        data: null,
-        error: "Category not found",
-      });
-      return;
-    }
 
-    await db.category.delete({
-      where: {
-        id,
-      },
-    });
-    res.status(200).json({
-      success: true,
-      error: null,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      error: "Something went wrong",
-      data: null,
-    });
-  }
-};
 
 export const updateCategoryById: RequestHandler = async (req, res) => {
   try {
@@ -159,6 +127,40 @@ export const updateCategoryById: RequestHandler = async (req, res) => {
 
     res.status(200).json({
       data: updatedCategory,
+      error: null,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: "Something went wrong",
+      data: null,
+    });
+  }
+};
+
+export const deleteCategoryById: RequestHandler = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const category = await db.category.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!category) {
+      res.status(404).json({
+        data: null,
+        error: "Category not found",
+      });
+      return;
+    }
+
+    await db.category.delete({
+      where: {
+        id,
+      },
+    });
+    res.status(200).json({
+      success: true,
       error: null,
     });
   } catch (error) {
