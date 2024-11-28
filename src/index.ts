@@ -1,42 +1,36 @@
-import express from "express";
-import customerRouter from "./routes/customer";
-import userRouter from "./routes/user";
-import shopRouter from "./routes/shop";
-import supplierRouter from "./routes/supplier";
-import loginRouter from "./routes/login";
-import unitRouter from "./routes/unit";
-import brandRouter from "./routes/brand";
-import categoryRouter from "./routes/category";
-import productRouter from "./routes/product";
-require("dotenv").config();
-const cors = require("cors");
+import express from 'express';
+import cors from 'cors';
+
+// Import your routes
+import userRoutes from './routes/user';
+import unitRoutes from './routes/unit';
+import customerRoutes from './routes/customer';
+import supplierRoutes from './routes/supplier';
+import shopRoutes from './routes/shop';
+import brandRoutes from './routes/brand';
+import categoryRoutes from './routes/category';
+import productRoutes from './routes/product';
+
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Test route
-app.get('/api/v1', (req, res) => {
+// Define routes
+app.use('/api/users', userRoutes);
+app.use('/api/units', unitRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/shops', shopRoutes);
+app.use('/api/brands', brandRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/products', productRoutes);
+
+// Test route to verify API is working
+app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
-app.use("/api/v1", customerRouter);
-app.use("/api/v1", userRouter);
-app.use("/api/v1", shopRouter);
-app.use("/api/v1", supplierRouter);
-app.use("/api/v1", loginRouter);
-app.use("/api/v1", unitRouter);
-app.use("/api/v1", brandRouter);
-app.use("/api/v1", categoryRouter);
-app.use("/api/v1", productRouter);
-
-// Remove app.listen for Vercel deployment
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 8000;
-  app.listen(PORT, () => {
-    console.log("Server is Running..");
-  });
-}
-
-// Export the Express app
+// Export the app for Vercel
 export default app;
