@@ -1,15 +1,17 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
+import customerRouter from "./routes/customer";
+import userRouter from "./routes/user";
+import shopRouter from "./routes/shop";
+import supplierRouter from "./routes/supplier";
+import loginRouter from "./routes/login";
+import unitRouter from "./routes/unit";
+import brandRouter from "./routes/brand";
+import categoryRouter from "./routes/category";
+import productRouter from "./routes/product";
+import * as dotenv from "dotenv";
 
-// Import your routes
-import userRoutes from './routes/user';
-import unitRoutes from './routes/unit';
-import customerRoutes from './routes/customer';
-import supplierRoutes from './routes/supplier';
-import shopRoutes from './routes/shop';
-import brandRoutes from './routes/brand';
-import categoryRoutes from './routes/category';
-import productRoutes from './routes/product';
+dotenv.config();
 
 const app = express();
 
@@ -17,20 +19,40 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Define routes
-app.use('/api/users', userRoutes);
-app.use('/api/units', unitRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/suppliers', supplierRoutes);
-app.use('/api/shops', shopRoutes);
-app.use('/api/brands', brandRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/products', productRoutes);
-
-// Test route to verify API is working
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'API is working!' });
+// Basic health check route
+app.get('/api/v1/health', (req, res) => {
+  res.json({ status: 'ok', message: 'API is working!' });
 });
 
-// Export the app for Vercel
+// API Routes
+app.use("/api/v1", customerRouter);
+app.use("/api/v1", userRouter);
+app.use("/api/v1", shopRouter);
+app.use("/api/v1", supplierRouter);
+app.use("/api/v1", loginRouter);
+app.use("/api/v1", unitRouter);
+app.use("/api/v1", brandRouter);
+app.use("/api/v1", categoryRouter);
+app.use("/api/v1", productRouter);
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// Handle 404
+app.use((req: express.Request, res: express.Response) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+// Only listen in development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+// Export the Express app
 export default app;
