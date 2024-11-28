@@ -13,10 +13,12 @@ const cors = require("cors");
 const app = express();
 
 app.use(cors());
-
-const PORT = process.env.PORT || 8000;
-
 app.use(express.json());
+
+// Test route
+app.get('/api/v1', (req, res) => {
+  res.json({ message: 'API is working!' });
+});
 
 app.use("/api/v1", customerRouter);
 app.use("/api/v1", userRouter);
@@ -28,6 +30,13 @@ app.use("/api/v1", brandRouter);
 app.use("/api/v1", categoryRouter);
 app.use("/api/v1", productRouter);
 
-app.listen(PORT, () => {
-  console.log("Server is Running..");
-});
+// Remove app.listen for Vercel deployment
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log("Server is Running..");
+  });
+}
+
+// Export the Express app
+export default app;
