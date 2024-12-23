@@ -3,7 +3,7 @@ import {
   getShopAttendants,
   getShops,
   getSingleShop,
-} from "@/controllers/shops";
+} from "../controllers/shops";
 import express from "express";
 
 const shopRouter = express.Router();

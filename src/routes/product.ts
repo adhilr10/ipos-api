@@ -4,7 +4,7 @@ import {
   getProducts,
   getSingleProduct,
   updateProductById,
-} from "@/controllers/products";
+} from "../controllers/products";
 
 import express from "express";
 

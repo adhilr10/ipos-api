@@ -1,4 +1,4 @@
-import { createCustomer, getCustomers, getSingleCustomer } from "@/controllers/customers";
+import { createCustomer, getCustomers, getSingleCustomer } from "../controllers/customers";
 import express from "express"
 const customerRouter = express.Router()
 

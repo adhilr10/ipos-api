@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { db } from "@/db/db";
+import { db } from "../db/db";
 import { basename } from "path";
 
 export const createProduct: RequestHandler = async (req, res) => {
@@ -23,6 +23,8 @@ export const createProduct: RequestHandler = async (req, res) => {
       brandId,
       categoryId,
       expiryDate,
+      wholeSalePrice,
+      shopId,
     } = req.body;
 
     //Check if product already exists
@@ -94,6 +96,8 @@ export const createProduct: RequestHandler = async (req, res) => {
         brandId,
         categoryId,
         expiryDate,
+        wholeSalePrice,
+        shopId,
       },
     });
 
@@ -179,6 +183,8 @@ export const updateProductById: RequestHandler = async (req, res) => {
       brandId,
       categoryId,
       expiryDate,
+      wholeSalePrice,
+      shopId,
     } = req.body;
 
     const existingProduct = await db.product.findUnique({
@@ -271,6 +277,8 @@ export const updateProductById: RequestHandler = async (req, res) => {
         brandId,
         categoryId,
         expiryDate,
+        wholeSalePrice,
+        shopId,
       },
     });
 

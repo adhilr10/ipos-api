@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { db } from "@/db/db";
+import { db } from "../db/db";
 
 export const createShop: RequestHandler = async (req, res) => {
   try {

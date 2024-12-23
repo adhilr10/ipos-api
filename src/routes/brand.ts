@@ -4,7 +4,7 @@ import {
   getBrands,
   getSingleBrand,
   updateBrandById,
-} from "@/controllers/brands";
+} from "../controllers/brands";
 
 import express from "express";
 

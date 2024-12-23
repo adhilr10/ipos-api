@@ -1,8 +1,8 @@
 import { Request, RequestHandler, Response } from "express";
-import { db } from "@/db/db";
+import { db } from "../db/db";
 import bcrypt from "bcrypt";
 
-export async function createUser(req: Request, res: Response) {
+export const createUser: RequestHandler = async (req, res) => {
   const {
     email,
     username,
@@ -11,7 +11,6 @@ export async function createUser(req: Request, res: Response) {
     lastName,
     phone,
     dob,
-    gender,
     image,
     role,
   } = req.body;
@@ -67,7 +66,6 @@ export async function createUser(req: Request, res: Response) {
         lastName,
         phone,
         dob,
-        gender,
         role,
         image: image
           ? image
@@ -83,14 +81,14 @@ export async function createUser(req: Request, res: Response) {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });
   }
-}
+};
 
-export async function getUser(req: Request, res: Response) {
+export const getUser: RequestHandler = async (req, res) => {
   try {
     const users = await db.user.findMany({
       orderBy: {
@@ -107,14 +105,14 @@ export async function getUser(req: Request, res: Response) {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });
   }
-}
+};
 
-export async function getUserById(req: Request, res: Response) {
+export const getUserById: RequestHandler = async (req, res) => {
   const { id } = req.params;
   try {
     const user = await db.user.findUnique({
@@ -123,10 +121,11 @@ export async function getUserById(req: Request, res: Response) {
       },
     });
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         data: null,
         error: "User not found",
       });
+      return;
     }
     const { password, ...others } = user;
     res.status(200).json({
@@ -135,14 +134,14 @@ export async function getUserById(req: Request, res: Response) {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });
   }
-}
+};
 
-export async function updateUserById(req: Request, res: Response) {
+export const updateUserById: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -153,7 +152,6 @@ export async function updateUserById(req: Request, res: Response) {
       password,
       phone,
       dob,
-      gender,
       image,
     } = req.body;
 
@@ -236,7 +234,6 @@ export async function updateUserById(req: Request, res: Response) {
         lastName,
         phone,
         dob,
-        gender,
         image,
         password: hashedPassword,
       },
@@ -255,9 +252,9 @@ export async function updateUserById(req: Request, res: Response) {
       data: null,
     });
   }
-}
+};
 
-export async function updateUserPasswordById(req: Request, res: Response) {
+export const updateUserPasswordById: RequestHandler = async (req, res) => {
   const { id } = req.params;
   const { password } = req.body;
 
@@ -295,9 +292,9 @@ export async function updateUserPasswordById(req: Request, res: Response) {
       data: null,
     });
   }
-}
+};
 
-export async function deleteUserById(req: Request, res: Response) {
+export const deleteUserById: RequestHandler = async (req, res) => {
   const { id } = req.params;
   try {
     const user = await db.user.findUnique({
@@ -333,7 +330,7 @@ export async function deleteUserById(req: Request, res: Response) {
       data: null,
     });
   }
-}
+};
 
 // export const deleteUserById: RequestHandler = async (req, res) => {
 //   const { id } = req.params;
@@ -369,8 +366,7 @@ export async function deleteUserById(req: Request, res: Response) {
 //   }
 // };
 
-
-export async function getAttendants(req: Request, res: Response) {
+export const getAttendants: RequestHandler = async (req, res) => {
   try {
     const users = await db.user.findMany({
       orderBy: {
@@ -390,9 +386,9 @@ export async function getAttendants(req: Request, res: Response) {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       error: "Something went wrong",
       data: null,
     });
   }
-}
+};

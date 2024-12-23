@@ -1,4 +1,4 @@
-import { db } from "@/db/db";
+import { db } from "../db/db";
 import { RequestHandler } from "express";
 
 export const createSupplier: RequestHandler = async (req, res) => {

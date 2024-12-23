@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { db } from "@/db/db";
+import { db } from "../db/db";
 
 export const createCustomer: RequestHandler = async (req, res) => {
   const {
@@ -7,7 +7,6 @@ export const createCustomer: RequestHandler = async (req, res) => {
     firstName,
     lastName,
     phone,
-    gender,
     country,
     location,
     maxCreditLimit,
@@ -63,7 +62,6 @@ export const createCustomer: RequestHandler = async (req, res) => {
         firstName,
         lastName,
         phone,
-        gender,
         country,
         location,
         maxCreditLimit,

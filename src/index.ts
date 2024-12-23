@@ -10,6 +10,7 @@ import brandRouter from "./routes/brand";
 import categoryRouter from "./routes/category";
 import productRouter from "./routes/product";
 import * as dotenv from "dotenv";
+import saleRouter from "./routes/sale";
 
 dotenv.config();
 
@@ -19,10 +20,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Basic health check route
-app.get('/api/v1/health', (req, res) => {
-  res.json({ status: 'ok', message: 'API is working!' });
-});
 
 // API Routes
 app.use("/api/v1", customerRouter);
@@ -34,6 +31,7 @@ app.use("/api/v1", unitRouter);
 app.use("/api/v1", brandRouter);
 app.use("/api/v1", categoryRouter);
 app.use("/api/v1", productRouter);
+app.use("/api/v1", saleRouter);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

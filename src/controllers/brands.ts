@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { db } from "@/db/db";
+import { db } from "../db/db";
 
 export const createBrand: RequestHandler = async (req, res) => {
   try {
@@ -14,7 +14,7 @@ export const createBrand: RequestHandler = async (req, res) => {
         error: `Brand ${name} already exists`,
         data: null,
       });
-      return;
+      return
     }
 
     const newBrand = await db.brand.create({

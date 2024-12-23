@@ -4,7 +4,7 @@ import {
   getSingleUnit,
   getUnits,
   updateUnitById,
-} from "@/controllers/units";
+} from "../controllers/units";
 
 import express from "express";
 
