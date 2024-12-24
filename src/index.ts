@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import { rateLimit } from "express-rate-limit";
+
 import customerRouter from "./routes/customer";
 import userRouter from "./routes/user";
 import shopRouter from "./routes/shop";
@@ -11,15 +13,50 @@ import categoryRouter from "./routes/category";
 import productRouter from "./routes/product";
 import * as dotenv from "dotenv";
 import saleRouter from "./routes/sale";
+import payeeRouter from "./routes/payee";
+import expenseCategoryRouter from "./routes/expense-category";
+import expenseRouter from "./routes/expense";
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  handler: (req, res) => {
+    res.status(429).json({
+      error: "You are making too many requests. Please try again later.",
+    });
+  },
+});
+
+// Apply general rate limiter to all requests
+app.use(generalLimiter);
+
+// Configure stricter rate limiter for sensitive operations
+const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50,  //Limit each IP to 50 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      error: "You are making too many requests. Please try again later.",
+    });
+  },
+});
+
+// Apply stricter rate limit to sensitive routes
+app.use("/api/v1/sales", strictLimiter);
+app.use("/api/v1/users", strictLimiter);
+app.use("/api/v1/auth", strictLimiter);
+
 app.use(cors());
 app.use(express.json());
-
 
 // API Routes
 app.use("/api/v1", customerRouter);
@@ -32,20 +69,30 @@ app.use("/api/v1", brandRouter);
 app.use("/api/v1", categoryRouter);
 app.use("/api/v1", productRouter);
 app.use("/api/v1", saleRouter);
+app.use("/api/v1", payeeRouter);
+app.use("/api/v1", expenseCategoryRouter);
+app.use("/api/v1", expenseRouter);
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+// app.use(
+//   (
+//     err: any,
+//     req: express.Request,
+//     res: express.Response,
+//     next: express.NextFunction
+//   ) => {
+//     console.error(err.stack);
+//     res.status(500).json({ error: "Something went wrong!" });
+//   }
+// );
 
 // Handle 404
 app.use((req: express.Request, res: express.Response) => {
-  res.status(404).json({ error: 'Not Found' });
+  res.status(404).json({ error: "Not Found" });
 });
 
 // Only listen in development
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 8000;
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

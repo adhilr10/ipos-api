@@ -38,6 +38,7 @@ export const createUser: RequestHandler = async (req, res) => {
         data: null,
       });
       return;
+      return;
     }
     if (existingUserByPhone) {
       res.status(401).json({
@@ -125,13 +126,13 @@ export const getUserById: RequestHandler = async (req, res) => {
         data: null,
         error: "User not found",
       });
-      return;
+    } else {
+      const { password, ...others } = user;
+      res.status(200).json({
+        data: others,
+        error: null,
+      });
     }
-    const { password, ...others } = user;
-    res.status(200).json({
-      data: others,
-      error: null,
-    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -256,7 +257,7 @@ export const updateUserById: RequestHandler = async (req, res) => {
 
 export const updateUserPasswordById: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { password } = req.body;
+  const { oldPassword, newPassword } = req.body;
 
   try {
     const user = await db.user.findUnique({
@@ -269,8 +270,17 @@ export const updateUserPasswordById: RequestHandler = async (req, res) => {
         data: null,
         error: "User not found",
       });
+      return;
     }
-    const hashedPassword: string = await bcrypt.hash(password, 10);
+    // Check if old password is correct
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({
+        error: "Old password is incorrect",
+        data: null,
+      });
+    }
+    const hashedPassword: string = await bcrypt.hash(newPassword, 10);
 
     const updateUser = await db.user.update({
       where: {
@@ -307,22 +317,17 @@ export const deleteUserById: RequestHandler = async (req, res) => {
         data: null,
         error: "User not found",
       });
-      return;
+    } else {
+      await db.user.delete({
+        where: {
+          id,
+        },
+      });
+      res.status(200).json({
+        success: true,
+        error: null,
+      });
     }
-    const updateUser = await db.user.findUnique({
-      where: {
-        id,
-      },
-    });
-    await db.user.delete({
-      where: {
-        id,
-      },
-    });
-    res.status(200).json({
-      success: true,
-      error: null,
-    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -331,40 +336,6 @@ export const deleteUserById: RequestHandler = async (req, res) => {
     });
   }
 };
-
-// export const deleteUserById: RequestHandler = async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     const user = await db.user.findUnique({
-//       where: {
-//         id,
-//       },
-//     });
-//     if (!user) {
-//       res.status(404).json({
-//         data: null,
-//         error: "User not found",
-//       });
-//       return;
-//     }
-
-//     await db.user.delete({
-//       where: {
-//         id,
-//       },
-//     });
-//     res.status(200).json({
-//       success: true,
-//       error: null,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({
-//       error: "Something went wrong",
-//       data: null,
-//     });
-//   }
-// };
 
 export const getAttendants: RequestHandler = async (req, res) => {
   try {
