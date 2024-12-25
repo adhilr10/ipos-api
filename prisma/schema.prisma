@@ -98,9 +98,11 @@ model Supplier {
   logo               String?      @default("https://cdn-icons-png.flaticon.com/128/10446/10446694.png")
   rating             Float?
   notes              String?
+  product            Product[]
+  purchaseOrders    PurchaseOrder[]
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
-  Product            Product[]
+
 }
 
 enum SupplierType {
@@ -140,35 +142,37 @@ model Category {
 }
 
 model Product {
-  id             String     @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  description    String?
-  batchNumber    String?
-  barcode        String?    @unique
-  image          String?    @default("https://cdn-icons-png.flaticon.com/128/10446/10446694.png")
-  tax            Int?
-  alertQty       Int
-  stockQty       Int
-  price          Int
-  wholeSalePrice Int        @default(0)
-  buyingPrice    Int?
-  sku            String     @unique
-  productCode    String     @unique
-  slug           String     @unique
-  supplierId     String     @db.ObjectId
-  unitId         String     @db.ObjectId
-  shopId         String     @default("6741956bc0f984c5cea3df43") @db.ObjectId
-  brandId        String     @db.ObjectId
-  categoryId     String     @db.ObjectId
-  expiryDate     DateTime
-  shop           Shop       @relation(fields: [shopId], references: [id])
-  unit           Unit       @relation(fields: [unitId], references: [id])
-  brand          Brand      @relation(fields: [brandId], references: [id])
-  category       Category   @relation(fields: [categoryId], references: [id])
-  supplier       Supplier   @relation(fields: [supplierId], references: [id])
-  saleItems      SaleItem[]
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String?
+  batchNumber     String?
+  barcode         String?          @unique
+  image           String?          @default("https://cdn-icons-png.flaticon.com/128/10446/10446694.png")
+  tax             Int?
+  alertQty        Int
+  stockQty        Int
+  price           Int
+  wholeSalePrice  Int              @default(0)
+  buyingPrice     Int?
+  sku             String           @unique
+  productCode     String           @unique
+  slug            String           @unique
+  supplierId      String           @db.ObjectId
+  unitId          String           @db.ObjectId
+  shopId          String           @default("6741956bc0f984c5cea3df43") @db.ObjectId
+  brandId         String           @db.ObjectId
+  categoryId      String           @db.ObjectId
+  expiryDate      DateTime
+  shop            Shop             @relation(fields: [shopId], references: [id])
+  unit            Unit             @relation(fields: [unitId], references: [id])
+  brand           Brand            @relation(fields: [brandId], references: [id])
+  category        Category         @relation(fields: [categoryId], references: [id])
+  supplier        Supplier         @relation(fields: [supplierId], references: [id])
+  saleItems       SaleItem[]
+  adjustmentItems AdjustmentItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 enum SaleType {
@@ -254,4 +258,81 @@ model Expense {
   shop        Shop            @relation(fields: [shopId], references: [id])
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+}
+
+enum NotificationStatus {
+  WARNING
+  DANGER
+  INFO
+}
+
+model Notification {
+  id         String             @id @default(auto()) @map("_id") @db.ObjectId
+  message    String
+  status     NotificationStatus @default(WARNING)
+  statusText String
+  read       Boolean            @default(false)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+}
+
+model Adjustment {
+  id     String           @id @default(auto()) @map("_id") @db.ObjectId
+  refNo  String           @unique @default("AAAAB")
+  reason String
+  items  AdjustmentItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdjustmentItem {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  adjustment   Adjustment @relation(fields: [adjustmentId], references: [id])
+  adjustmentId String     @db.ObjectId
+  productId    String     @db.ObjectId
+  product      Product    @relation(fields: [productId], references: [id])
+  quantity     Int
+  type         String
+  currentStock Int
+  productName  String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum PurchaseOrderStatus {
+  PAID
+  PARTIAL
+  UNPAID
+}
+
+model PurchaseOrder {
+  id            String              @id @default(auto()) @map("_id") @db.ObjectId
+  supplierId    String              @db.ObjectId
+  supplier      Supplier            @relation(fields: [supplierId], references: [id])
+  status        PurchaseOrderStatus @default(PAID)
+  discount      Int?
+  notes         String?
+  tax           Int?
+  refNo         String
+  totalAmount   Int
+  balanceAmount Int
+  shippingCost  Int?
+  items         PurchaseOrderItem[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+model PurchaseOrderItem {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  purchaseOrder   PurchaseOrder  @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrderId String         @db.ObjectId
+  productId       String         @db.ObjectId
+  product         Product        @relation(fields: [productId], references: [id])
+  quantity        Int
+  productName     String
+  unitCost        Int
+  subTotal        Int
+  currentStock    Int
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }

@@ -16,6 +16,9 @@ import saleRouter from "./routes/sale";
 import payeeRouter from "./routes/payee";
 import expenseCategoryRouter from "./routes/expense-category";
 import expenseRouter from "./routes/expense";
+import notificationRouter from "./routes/notification";
+import adjustmentRouter from "./routes/adjustment";
+import purchaseRouter from "./routes/purchase";
 
 dotenv.config();
 
@@ -40,7 +43,7 @@ app.use(generalLimiter);
 // Configure stricter rate limiter for sensitive operations
 const strictLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50,  //Limit each IP to 50 requests per windowMs
+  max: 50, //Limit each IP to 50 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
@@ -72,6 +75,9 @@ app.use("/api/v1", saleRouter);
 app.use("/api/v1", payeeRouter);
 app.use("/api/v1", expenseCategoryRouter);
 app.use("/api/v1", expenseRouter);
+app.use("/api/v1", notificationRouter);
+app.use("/api/v1", adjustmentRouter);
+app.use("/api/v1", purchaseRouter);
 
 // Error handling middleware
 // app.use(
