@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { rateLimit } from "express-rate-limit";
+import swaggerUi from "swagger-ui-express";
+import { specs } from "./swagger";
 
 import customerRouter from "./routes/customer";
 import userRouter from "./routes/user";
@@ -19,12 +21,16 @@ import expenseRouter from "./routes/expense";
 import notificationRouter from "./routes/notification";
 import adjustmentRouter from "./routes/adjustment";
 import purchaseRouter from "./routes/purchase";
+import path from "path";
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
+// Swagger UI
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+ 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
@@ -61,6 +67,10 @@ app.use("/api/v1/auth", strictLimiter);
 app.use(cors());
 app.use(express.json());
 
+// Home Route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "home.html"));
+});
 // API Routes
 app.use("/api/v1", customerRouter);
 app.use("/api/v1", userRouter);
@@ -79,18 +89,6 @@ app.use("/api/v1", notificationRouter);
 app.use("/api/v1", adjustmentRouter);
 app.use("/api/v1", purchaseRouter);
 
-// Error handling middleware
-// app.use(
-//   (
-//     err: any,
-//     req: express.Request,
-//     res: express.Response,
-//     next: express.NextFunction
-//   ) => {
-//     console.error(err.stack);
-//     res.status(500).json({ error: "Something went wrong!" });
-//   }
-// );
 
 // Handle 404
 app.use((req: express.Request, res: express.Response) => {
