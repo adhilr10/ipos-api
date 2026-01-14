@@ -1,68 +1,183 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authorizeUser = authorizeUser;
-const db_1 = require("@/db/db");
+exports.changePassword = exports.verifyToken = exports.forgetPassword = exports.authorizeUser = void 0;
+const db_1 = require("../db/db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const generateJWT_1 = require("@/utils/generateJWT");
-function authorizeUser(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const { email, username, password } = req.body;
-        try {
-            let existingUser = null;
-            if (email) {
-                existingUser = yield db_1.db.user.findUnique({
-                    where: {
-                        email,
-                    },
+const generateJWT_1 = require("../utils/generateJWT");
+const date_fns_1 = require("date-fns");
+const generateEmailHTML_1 = require("../utils/generateEmailHTML");
+const nodemailer_1 = __importDefault(require("nodemailer"));
+const authorizeUser = async (req, res) => {
+    const { email, username, password } = req.body;
+    try {
+        let existingUser = null;
+        if (email) {
+            existingUser = await db_1.db.user.findUnique({
+                where: {
+                    email,
+                },
+            });
+        }
+        if (username) {
+            existingUser = await db_1.db.user.findUnique({
+                where: {
+                    username,
+                },
+            });
+        }
+        if (!existingUser) {
+            res.status(403).json({ error: "User not found" });
+            return;
+        }
+        //check if password is correct
+        const passwordMatch = await bcrypt_1.default.compare(password, existingUser.password);
+        if (!passwordMatch) {
+            res.status(403).json({ error: "Wrong credentials" });
+            return;
+        }
+        // Destructure out the password from the existing user
+        const { password: userPassword, ...userWithoutPassword } = existingUser;
+        const accessToken = (0, generateJWT_1.generateAccessToken)(userWithoutPassword);
+        const result = {
+            ...userWithoutPassword,
+            accessToken,
+        };
+        res.status(200).json(result);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to authorize user" });
+    }
+};
+exports.authorizeUser = authorizeUser;
+const generateToken = () => {
+    const min = 100000;
+    const max = 999999;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+const forgetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        // Check if user exists with this email
+        const existingUser = await db_1.db.user.findUnique({
+            where: {
+                email,
+            },
+        });
+        if (!existingUser) {
+            res.status(403).json({ error: "User not found" });
+        }
+        const resetToken = generateToken().toString();
+        const resetTokenExpiry = (0, date_fns_1.addMinutes)(new Date(), 10);
+        // Update user with reset token and expiry
+        const updatedUser = await db_1.db.user.update({
+            where: {
+                email,
+            },
+            data: {
+                resetToken,
+                resetTokenExpiry,
+            },
+        });
+        const emailHTML = (0, generateEmailHTML_1.generateEmailHTML)(resetToken);
+        // Configure nodemailer transporter with TLS settings
+        const transporter = nodemailer_1.default.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+            tls: {
+                rejectUnauthorized: false, // Only use during development/testing
+            },
+        });
+        // Send email with nodemailer
+        const mailOptions = {
+            from: "asayn.com@gmail.com",
+            to: email,
+            subject: "Password Reset Request",
+            html: emailHTML,
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                res.status(500).json({ error });
+            }
+            else {
+                const result = {
+                    userId: updatedUser.id,
+                    emailId: info.messageId,
+                };
+                res.status(200).json({
+                    message: `Password reset email sent to ${email}`,
+                    data: result,
                 });
             }
-            if (username) {
-                existingUser = yield db_1.db.user.findUnique({
-                    where: {
-                        username,
-                    },
-                });
-            }
-            if (!existingUser) {
-                return res.status(403).json({ error: "User not found" });
-            }
-            //check if password is correct
-            const passwordMatch = yield bcrypt_1.default.compare(password, existingUser.password);
-            if (!passwordMatch) {
-                return res.status(403).json({ error: "Wrong credentials" });
-            }
-            // Destructure out the password from the existing user
-            const { password: userPassword } = existingUser, userWithoutPassword = __rest(existingUser, ["password"]);
-            const accessToken = (0, generateJWT_1.generateAccessToken)(userWithoutPassword);
-            const result = Object.assign(Object.assign({}, userWithoutPassword), { accessToken });
-            res.status(200).json(result);
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to reset password", data: null });
+    }
+};
+exports.forgetPassword = forgetPassword;
+const verifyToken = async (req, res) => {
+    try {
+        const { resetToken } = req.params;
+        //TODO: resetToken checking problem detected
+        //check if user exist  with this email
+        const existingToken = await db_1.db.user.findFirst({
+            where: {
+                resetToken,
+                resetTokenExpiry: { gte: new Date() },
+            },
+        });
+        if (!existingToken) {
+            res
+                .status(400)
+                .json({ error: "Invalid or Expired Token", data: null });
         }
-        catch (error) {
-            console.log(error);
-            res.status(500).json({ error: "Failed to authorize user" });
+        res.status(200).json({ message: "Token verified successfully" });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to reset password", data: null });
+    }
+};
+exports.verifyToken = verifyToken;
+const changePassword = async (req, res) => {
+    const { resetToken } = req.params;
+    const { newPassword } = req.body;
+    try {
+        const user = await db_1.db.user.findFirst({
+            where: {
+                resetToken,
+                resetTokenExpiry: { gte: new Date() },
+            },
+        });
+        if (!user) {
+            res.status(400).json({ message: "Invalid or expired token" });
+            return;
         }
-    });
-}
+        // Hash the new password
+        const hashedPassword = await bcrypt_1.default.hash(newPassword, 10);
+        // Update the user's password and clear the reset token and expiry
+        await db_1.db.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                resetToken: null,
+                resetTokenExpiry: null,
+            },
+        });
+        res.status(200).json({ message: "Password changed successfully" });
+    }
+    catch (error) {
+        res.status(500).json({ message: "Server error", error: error });
+    }
+};
+exports.changePassword = changePassword;

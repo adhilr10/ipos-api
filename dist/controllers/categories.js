@@ -1,20 +1,11 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteCategoryById = exports.updateCategoryById = exports.getSingleCategory = exports.getCategories = exports.createCategory = void 0;
-const db_1 = require("@/db/db");
-const createCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const db_1 = require("../db/db");
+const createCategory = async (req, res) => {
     try {
         const { name, slug } = req.body;
-        const existingCategory = yield db_1.db.category.findUnique({
+        const existingCategory = await db_1.db.category.findUnique({
             where: { slug },
         });
         if (existingCategory) {
@@ -24,7 +15,7 @@ const createCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
             });
             return;
         }
-        const newCategory = yield db_1.db.category.create({
+        const newCategory = await db_1.db.category.create({
             data: { name, slug },
         });
         res.status(201).json({
@@ -39,11 +30,11 @@ const createCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
             error: "Something went wrong",
         });
     }
-});
+};
 exports.createCategory = createCategory;
-const getCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getCategories = async (req, res) => {
     try {
-        const categories = yield db_1.db.category.findMany({
+        const categories = await db_1.db.category.findMany({
             orderBy: { createdAt: "desc" },
         });
         res.status(200).json({
@@ -58,12 +49,12 @@ const getCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getCategories = getCategories;
-const getSingleCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getSingleCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const existingCategory = yield db_1.db.category.findUnique({
+        const existingCategory = await db_1.db.category.findUnique({
             where: { id },
         });
         if (!existingCategory) {
@@ -85,13 +76,13 @@ const getSingleCategory = (req, res) => __awaiter(void 0, void 0, void 0, functi
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getSingleCategory = getSingleCategory;
-const updateCategoryById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateCategoryById = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, slug } = req.body;
-        const existingCategory = yield db_1.db.category.findUnique({
+        const existingCategory = await db_1.db.category.findUnique({
             where: {
                 id,
             },
@@ -104,7 +95,7 @@ const updateCategoryById = (req, res) => __awaiter(void 0, void 0, void 0, funct
             return;
         }
         if (slug && slug !== existingCategory.slug) {
-            const existingCategoryBySlug = yield db_1.db.category.findUnique({
+            const existingCategoryBySlug = await db_1.db.category.findUnique({
                 where: { slug },
             });
             if (existingCategoryBySlug) {
@@ -115,7 +106,7 @@ const updateCategoryById = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 return;
             }
         }
-        const updatedCategory = yield db_1.db.category.update({
+        const updatedCategory = await db_1.db.category.update({
             where: {
                 id,
             },
@@ -136,12 +127,12 @@ const updateCategoryById = (req, res) => __awaiter(void 0, void 0, void 0, funct
             data: null,
         });
     }
-});
+};
 exports.updateCategoryById = updateCategoryById;
-const deleteCategoryById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteCategoryById = async (req, res) => {
     const { id } = req.params;
     try {
-        const category = yield db_1.db.category.findUnique({
+        const category = await db_1.db.category.findUnique({
             where: {
                 id,
             },
@@ -153,7 +144,7 @@ const deleteCategoryById = (req, res) => __awaiter(void 0, void 0, void 0, funct
             });
             return;
         }
-        yield db_1.db.category.delete({
+        await db_1.db.category.delete({
             where: {
                 id,
             },
@@ -170,5 +161,5 @@ const deleteCategoryById = (req, res) => __awaiter(void 0, void 0, void 0, funct
             data: null,
         });
     }
-});
+};
 exports.deleteCategoryById = deleteCategoryById;

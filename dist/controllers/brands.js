@@ -1,20 +1,11 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteBrandById = exports.updateBrandById = exports.getSingleBrand = exports.getBrands = exports.createBrand = void 0;
-const db_1 = require("@/db/db");
-const createBrand = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const db_1 = require("../db/db");
+const createBrand = async (req, res) => {
     try {
         const { name, abbreviation, slug } = req.body;
-        const existingBrand = yield db_1.db.brand.findUnique({
+        const existingBrand = await db_1.db.brand.findUnique({
             where: { slug },
         });
         if (existingBrand) {
@@ -24,7 +15,7 @@ const createBrand = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
             return;
         }
-        const newBrand = yield db_1.db.brand.create({
+        const newBrand = await db_1.db.brand.create({
             data: { name, slug },
         });
         res.status(201).json({
@@ -39,11 +30,11 @@ const createBrand = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             error: "Something went wrong",
         });
     }
-});
+};
 exports.createBrand = createBrand;
-const getBrands = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getBrands = async (req, res) => {
     try {
-        const brands = yield db_1.db.brand.findMany({
+        const brands = await db_1.db.brand.findMany({
             orderBy: { createdAt: "desc" },
         });
         res.status(200).json({
@@ -58,12 +49,12 @@ const getBrands = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getBrands = getBrands;
-const getSingleBrand = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getSingleBrand = async (req, res) => {
     try {
         const { id } = req.params;
-        const existingBrand = yield db_1.db.brand.findUnique({
+        const existingBrand = await db_1.db.brand.findUnique({
             where: { id },
         });
         if (!existingBrand) {
@@ -85,13 +76,13 @@ const getSingleBrand = (req, res) => __awaiter(void 0, void 0, void 0, function*
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getSingleBrand = getSingleBrand;
-const updateBrandById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateBrandById = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, abbreviation, slug } = req.body;
-        const existingBrand = yield db_1.db.brand.findUnique({
+        const existingBrand = await db_1.db.brand.findUnique({
             where: {
                 id,
             },
@@ -104,7 +95,7 @@ const updateBrandById = (req, res) => __awaiter(void 0, void 0, void 0, function
             return;
         }
         if (slug && slug !== existingBrand.slug) {
-            const existingBrandBySlug = yield db_1.db.brand.findUnique({
+            const existingBrandBySlug = await db_1.db.brand.findUnique({
                 where: { slug },
             });
             if (existingBrandBySlug) {
@@ -115,7 +106,7 @@ const updateBrandById = (req, res) => __awaiter(void 0, void 0, void 0, function
                 return;
             }
         }
-        const updatedBrand = yield db_1.db.brand.update({
+        const updatedBrand = await db_1.db.brand.update({
             where: {
                 id,
             },
@@ -136,12 +127,12 @@ const updateBrandById = (req, res) => __awaiter(void 0, void 0, void 0, function
             data: null,
         });
     }
-});
+};
 exports.updateBrandById = updateBrandById;
-const deleteBrandById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteBrandById = async (req, res) => {
     const { id } = req.params;
     try {
-        const brand = yield db_1.db.brand.findUnique({
+        const brand = await db_1.db.brand.findUnique({
             where: {
                 id,
             },
@@ -153,7 +144,7 @@ const deleteBrandById = (req, res) => __awaiter(void 0, void 0, void 0, function
             });
             return;
         }
-        yield db_1.db.brand.delete({
+        await db_1.db.brand.delete({
             where: {
                 id,
             },
@@ -170,5 +161,5 @@ const deleteBrandById = (req, res) => __awaiter(void 0, void 0, void 0, function
             data: null,
         });
     }
-});
+};
 exports.deleteBrandById = deleteBrandById;

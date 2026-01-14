@@ -1,21 +1,12 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSingleCustomer = exports.getCustomers = exports.createCustomer = void 0;
-const db_1 = require("@/db/db");
-const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { customerType, firstName, lastName, phone, gender, country, location, maxCreditLimit, maxCreditDays, taxPin, dob, email, NIN, } = req.body;
+const db_1 = require("../db/db");
+const createCustomer = async (req, res) => {
+    const { customerType, firstName, lastName, phone, country, location, maxCreditLimit, maxCreditDays, taxPin, dob, email, NIN, } = req.body;
     try {
         // Check if phone, email, and NIN are unique
-        const existingCustomerByPhone = yield db_1.db.customer.findUnique({
+        const existingCustomerByPhone = await db_1.db.customer.findUnique({
             where: { phone },
         });
         if (existingCustomerByPhone) {
@@ -25,7 +16,7 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return;
         }
         if (email) {
-            const existingCustomerByEmail = yield db_1.db.customer.findUnique({
+            const existingCustomerByEmail = await db_1.db.customer.findUnique({
                 where: { email },
             });
             if (existingCustomerByEmail) {
@@ -36,7 +27,7 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
             }
         }
         if (NIN) {
-            const existingCustomerByNin = yield db_1.db.customer.findUnique({
+            const existingCustomerByNin = await db_1.db.customer.findUnique({
                 where: { NIN },
             });
             if (existingCustomerByNin) {
@@ -46,13 +37,12 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 return;
             }
         }
-        const newCustomer = yield db_1.db.customer.create({
+        const newCustomer = await db_1.db.customer.create({
             data: {
                 customerType,
                 firstName,
                 lastName,
                 phone,
-                gender,
                 country,
                 location,
                 maxCreditLimit,
@@ -75,11 +65,11 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
             error: "Something went wrong",
         });
     }
-});
+};
 exports.createCustomer = createCustomer;
-const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getCustomers = async (req, res) => {
     try {
-        const customers = yield db_1.db.customer.findMany({
+        const customers = await db_1.db.customer.findMany({
             orderBy: {
                 createdAt: "desc",
             },
@@ -96,12 +86,12 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getCustomers = getCustomers;
-const getSingleCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getSingleCustomer = async (req, res) => {
     const { id } = req.params;
     try {
-        const customer = yield db_1.db.customer.findUnique({
+        const customer = await db_1.db.customer.findUnique({
             where: { id },
         });
         if (!customer) {
@@ -123,5 +113,5 @@ const getSingleCustomer = (req, res) => __awaiter(void 0, void 0, void 0, functi
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getSingleCustomer = getSingleCustomer;

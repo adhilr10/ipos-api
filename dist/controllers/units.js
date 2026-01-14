@@ -1,20 +1,11 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUnitById = exports.updateUnitById = exports.getSingleUnit = exports.getUnits = exports.createUnit = void 0;
-const db_1 = require("@/db/db");
-const createUnit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const db_1 = require("../db/db");
+const createUnit = async (req, res) => {
     try {
         const { name, abbreviation, slug } = req.body;
-        const existingUnit = yield db_1.db.unit.findUnique({
+        const existingUnit = await db_1.db.unit.findUnique({
             where: { slug },
         });
         if (existingUnit) {
@@ -24,7 +15,7 @@ const createUnit = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             });
             return;
         }
-        const newUnit = yield db_1.db.unit.create({
+        const newUnit = await db_1.db.unit.create({
             data: { name, slug, abbreviation },
         });
         res.status(201).json({
@@ -39,11 +30,11 @@ const createUnit = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             error: "Something went wrong",
         });
     }
-});
+};
 exports.createUnit = createUnit;
-const getUnits = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUnits = async (req, res) => {
     try {
-        const units = yield db_1.db.unit.findMany({
+        const units = await db_1.db.unit.findMany({
             orderBy: { createdAt: "desc" },
         });
         res.status(200).json({
@@ -58,12 +49,12 @@ const getUnits = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getUnits = getUnits;
-const getSingleUnit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getSingleUnit = async (req, res) => {
     try {
         const { id } = req.params;
-        const existingUnit = yield db_1.db.unit.findUnique({
+        const existingUnit = await db_1.db.unit.findUnique({
             where: { id },
         });
         if (!existingUnit) {
@@ -85,14 +76,14 @@ const getSingleUnit = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getSingleUnit = getSingleUnit;
-const updateUnitById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateUnitById = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, abbreviation, slug } = req.body;
         // Existing user
-        const existingUnit = yield db_1.db.unit.findUnique({
+        const existingUnit = await db_1.db.unit.findUnique({
             where: {
                 id,
             },
@@ -105,7 +96,7 @@ const updateUnitById = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return;
         }
         if (slug && slug !== existingUnit.slug) {
-            const existingUnitBySlug = yield db_1.db.unit.findUnique({
+            const existingUnitBySlug = await db_1.db.unit.findUnique({
                 where: { slug },
             });
             if (existingUnitBySlug) {
@@ -117,7 +108,7 @@ const updateUnitById = (req, res) => __awaiter(void 0, void 0, void 0, function*
             }
         }
         //Update unit
-        const updatedUnit = yield db_1.db.unit.update({
+        const updatedUnit = await db_1.db.unit.update({
             where: {
                 id,
             },
@@ -139,12 +130,12 @@ const updateUnitById = (req, res) => __awaiter(void 0, void 0, void 0, function*
             data: null,
         });
     }
-});
+};
 exports.updateUnitById = updateUnitById;
-const deleteUnitById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteUnitById = async (req, res) => {
     const { id } = req.params;
     try {
-        const unit = yield db_1.db.unit.findUnique({
+        const unit = await db_1.db.unit.findUnique({
             where: {
                 id,
             },
@@ -156,7 +147,7 @@ const deleteUnitById = (req, res) => __awaiter(void 0, void 0, void 0, function*
             });
             return;
         }
-        yield db_1.db.unit.delete({
+        await db_1.db.unit.delete({
             where: {
                 id,
             },
@@ -173,5 +164,5 @@ const deleteUnitById = (req, res) => __awaiter(void 0, void 0, void 0, function*
             data: null,
         });
     }
-});
+};
 exports.deleteUnitById = deleteUnitById;

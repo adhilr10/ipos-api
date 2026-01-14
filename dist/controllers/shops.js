@@ -1,20 +1,11 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSingleShop = exports.getShopAttendants = exports.getShops = exports.createShop = void 0;
-const db_1 = require("@/db/db");
-const createShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const db_1 = require("../db/db");
+const createShop = async (req, res) => {
     try {
         const { name, slug, location, adminId, attendantIds } = req.body;
-        const existingShop = yield db_1.db.shop.findUnique({
+        const existingShop = await db_1.db.shop.findUnique({
             where: { slug },
         });
         if (existingShop) {
@@ -24,7 +15,7 @@ const createShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             });
             return;
         }
-        const newShop = yield db_1.db.shop.create({
+        const newShop = await db_1.db.shop.create({
             data: { name, slug, location, adminId, attendantIds },
         });
         res.status(201).json({
@@ -39,11 +30,11 @@ const createShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             error: "Something went wrong",
         });
     }
-});
+};
 exports.createShop = createShop;
-const getShops = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getShops = async (req, res) => {
     try {
-        const shops = yield db_1.db.shop.findMany({
+        const shops = await db_1.db.shop.findMany({
             orderBy: { createdAt: "desc" },
         });
         res.status(200).json({
@@ -58,12 +49,12 @@ const getShops = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getShops = getShops;
-const getShopAttendants = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getShopAttendants = async (req, res) => {
     try {
         const { id } = req.params;
-        const existingShop = yield db_1.db.shop.findUnique({
+        const existingShop = await db_1.db.shop.findUnique({
             where: { id },
         });
         if (!existingShop) {
@@ -73,7 +64,7 @@ const getShopAttendants = (req, res) => __awaiter(void 0, void 0, void 0, functi
             });
             return;
         }
-        const attendants = yield db_1.db.user.findMany({
+        const attendants = await db_1.db.user.findMany({
             where: {
                 id: {
                     in: existingShop.attendantIds,
@@ -100,12 +91,12 @@ const getShopAttendants = (req, res) => __awaiter(void 0, void 0, void 0, functi
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getShopAttendants = getShopAttendants;
-const getSingleShop = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getSingleShop = async (req, res) => {
     try {
         const { id } = req.params;
-        const existingShop = yield db_1.db.shop.findUnique({
+        const existingShop = await db_1.db.shop.findUnique({
             where: { id },
         });
         if (!existingShop) {
@@ -127,5 +118,5 @@ const getSingleShop = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             error: "Something went wrong",
         });
     }
-});
+};
 exports.getSingleShop = getSingleShop;

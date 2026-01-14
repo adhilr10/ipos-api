@@ -12,10 +12,11 @@ export const createUser: RequestHandler = async (req, res) => {
     phone,
     dob,
     image,
-    role,
+    role
   } = req.body;
 
   try {
+    
     // Check if user already exists(username, email, phone)
     const existingUserByEmail = await db.user.findUnique({
       where: {
