@@ -48,29 +48,13 @@ const expense_1 = __importDefault(require("./routes/expense"));
 const notification_1 = __importDefault(require("./routes/notification"));
 const adjustment_1 = __importDefault(require("./routes/adjustment"));
 const purchase_1 = __importDefault(require("./routes/purchase"));
-const path_1 = __importDefault(require("path"));
 dotenv.config();
 const app = (0, express_1.default)();
 // Middleware
-// Swagger UI
 app.use("/docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.specs));
 const generalLimiter = (0, express_rate_limit_1.rateLimit)({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    handler: (req, res) => {
-        res.status(429).json({
-            error: "You are making too many requests. Please try again later.",
-        });
-    },
-});
-// Apply general rate limiter to all requests
-app.use(generalLimiter);
-// Configure stricter rate limiter for sensitive operations
-const strictLimiter = (0, express_rate_limit_1.rateLimit)({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50, //Limit each IP to 50 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {
@@ -79,16 +63,23 @@ const strictLimiter = (0, express_rate_limit_1.rateLimit)({
         });
     },
 });
-// Apply stricter rate limit to sensitive routes
+app.use(generalLimiter);
+const strictLimiter = (0, express_rate_limit_1.rateLimit)({
+    windowMs: 15 * 60 * 1000,
+    max: 50,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+        res.status(429).json({
+            error: "You are making too many requests. Please try again later.",
+        });
+    },
+});
 app.use("/api/v1/sales", strictLimiter);
 app.use("/api/v1/users", strictLimiter);
 app.use("/api/v1/auth", strictLimiter);
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-// Home route
-app.get("/", (req, res) => {
-    res.sendFile(path_1.default.join(__dirname, "public", "home.html"));
-});
 // API Routes
 app.use("/api/v1", customer_1.default);
 app.use("/api/v1", user_1.default);
@@ -106,26 +97,46 @@ app.use("/api/v1", expense_1.default);
 app.use("/api/v1", notification_1.default);
 app.use("/api/v1", adjustment_1.default);
 app.use("/api/v1", purchase_1.default);
-// Error handling middleware
-// app.use(
-//   (
-//     err: any,
-//     req: express.Request,
-//     res: express.Response,
-//     next: express.NextFunction
-//   ) => {
-//     console.error(err.stack);
-//     res.status(500).json({ error: "Something went wrong!" });
-//   }
-// );
 // Handle 404
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });
 });
-// Only listen in development or when running the server directly
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error("Error:", err);
+    res.status(500).json({
+        error: "Internal Server Error",
+        message: process.env.NODE_ENV === "production" ? undefined : err.message
+    });
 });
-// Export the Express app
+// Start server
+const PORT = parseInt(process.env.PORT || "8000", 10);
+const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`✓ Server is running on port ${PORT}`);
+    console.log(`✓ Environment: ${process.env.NODE_ENV}`);
+});
+// Handle graceful shutdown
+process.on("SIGTERM", () => {
+    console.log("SIGTERM received, shutting down gracefully");
+    server.close(() => {
+        console.log("Server closed");
+        process.exit(0);
+    });
+});
+process.on("SIGINT", () => {
+    console.log("SIGINT received, shutting down gracefully");
+    server.close(() => {
+        console.log("Server closed");
+        process.exit(0);
+    });
+});
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception:", err);
+    process.exit(1);
+});
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection at:", promise, "reason:", reason);
+    process.exit(1);
+});
 exports.default = app;

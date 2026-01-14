@@ -1,11 +1,11 @@
 {
   "name": "ipos-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "tsnd --respawn -r tsconfig-paths/register --pretty --transpile-only ./src/index.ts",
     "build": "tsc && tsc-alias",
-    "start": "node ./dist",
+    "start": "node dist/index.js",
     "postinstall": "prisma generate"
   },
   "keywords": [],
